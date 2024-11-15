@@ -1,0 +1,577 @@
+{
+    "name": "sl-spark-howard-road-safety-pipeline",
+    "properties": {
+        "activities": [
+            {
+                "name": "ForEachPostcodeCSV",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "FilterPostcodeCSVs",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@activity('FilterPostcodeCSVs').output.value",
+                        "type": "Expression"
+                    },
+                    "activities": [
+                        {
+                            "name": "CopyPostcodeCSV",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "DelimitedTextSource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSReadSettings",
+                                        "recursive": true,
+                                        "wildcardFileName": {
+                                            "value": "@item().name",
+                                            "type": "Expression"
+                                        },
+                                        "enablePartitionDiscovery": false
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "DelimitedTextSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings",
+                                        "copyBehavior": "MergeFiles"
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextWriteSettings",
+                                        "quoteAllText": true,
+                                        "fileExtension": ".csv"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": true,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "PostcodeCSVList",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "FileDirectory": {
+                                            "value": "@pipeline().parameters.pcd_csv_file_directory",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "MergedPostcodeCSV",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "FileName": {
+                                            "value": "@pipeline().parameters.merged_pcd_csv_file_name",
+                                            "type": "Expression"
+                                        },
+                                        "FileDirectory": {
+                                            "value": "@pipeline().parameters.merged_pcd_csv_file_directory",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "GetPostcodeCSVs",
+                "description": "Gets all CSVs from PostcodeCSVList",
+                "type": "GetMetadata",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "PostcodeCSVList",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "FileDirectory": {
+                                "value": "@pipeline().parameters.pcd_csv_file_directory",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    "fieldList": [
+                        "childItems"
+                    ],
+                    "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": true,
+                        "enablePartitionDiscovery": false
+                    },
+                    "formatSettings": {
+                        "type": "DelimitedTextReadSettings"
+                    }
+                }
+            },
+            {
+                "name": "FilterPostcodeCSVs",
+                "type": "Filter",
+                "dependsOn": [
+                    {
+                        "activity": "GetPostcodeCSVs",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@activity('GetPostcodeCSVs').output.childItems",
+                        "type": "Expression"
+                    },
+                    "condition": {
+                        "value": "@startsWith(item().name, 'NSPL21_AUG_2024_UK_AB')",
+                        "type": "Expression"
+                    }
+                }
+            },
+            {
+                "name": "RunNotebook",
+                "type": "DatabricksNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "ForEachPostcodeCSV",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": {
+                        "value": "@pipeline().parameters.db_notebook_path",
+                        "type": "Expression"
+                    },
+                    "baseParameters": {
+                        "kv_secret_scope_name": {
+                            "value": "@pipeline().parameters.kv_secret_scope_name",
+                            "type": "Expression"
+                        },
+                        "collision_storage_account": {
+                            "value": "@pipeline().parameters.collision_storage_account",
+                            "type": "Expression"
+                        },
+                        "collision_st_blob_container": {
+                            "value": "@pipeline().parameters.collision_st_blob_container",
+                            "type": "Expression"
+                        },
+                        "dls_storage_account": {
+                            "value": "@pipeline().parameters.dls_storage_account",
+                            "type": "Expression"
+                        },
+                        "kv_secret_collision_sta_key": {
+                            "value": "@pipeline().parameters.kv_secret_collision_sta_key",
+                            "type": "Expression"
+                        },
+                        "dls_raw_blob_container": {
+                            "value": "@pipeline().parameters.dls_raw_blob_container",
+                            "type": "Expression"
+                        },
+                        "kv_secret_dls_raw_key": {
+                            "value": "@pipeline().parameters.kv_secret_dls_raw_key",
+                            "type": "Expression"
+                        },
+                        "dls_load_parq_blob_container": {
+                            "value": "@pipeline().parameters.dls_load_parq_blob_container",
+                            "type": "Expression"
+                        },
+                        "kv_secret_dls_load_parq_key": {
+                            "value": "@pipeline().parameters.kv_secret_dls_load_parq_key",
+                            "type": "Expression"
+                        },
+                        "dls_raw_modified_blob_container": {
+                            "value": "@pipeline().parameters.dls_raw_modified_blob_container",
+                            "type": "Expression"
+                        },
+                        "kv_secret_dls_raw_modified_key": {
+                            "value": "@pipeline().parameters.kv_secret_dls_raw_modified_key",
+                            "type": "Expression"
+                        },
+                        "kv_secret_psql_db_pw_key": {
+                            "value": "@pipeline().parameters.kv_secret_psql_db_pw_key",
+                            "type": "Expression"
+                        },
+                        "psql_db_name": {
+                            "value": "@pipeline().parameters.psql_db_name",
+                            "type": "Expression"
+                        },
+                        "psql_db_user": {
+                            "value": "@pipeline().parameters.psql_db_user",
+                            "type": "Expression"
+                        },
+                        "psql_db_host": {
+                            "value": "@pipeline().parameters.psql_db_host",
+                            "type": "Expression"
+                        },
+                        "psql_db_server": {
+                            "value": "@pipeline().parameters.psql_db_server",
+                            "type": "Expression"
+                        },
+                        "psql_db_port": {
+                            "value": "@{pipeline().parameters.psql_db_port}",
+                            "type": "Expression"
+                        },
+                        "dls_load_table_blob_container": {
+                            "value": "@pipeline().parameters.dls_load_table_blob_container",
+                            "type": "Expression"
+                        },
+                        "collision_file_path": {
+                            "value": "@pipeline().parameters.collision_file_path",
+                            "type": "Expression"
+                        },
+                        "pcd_local_authorities_file_path": {
+                            "value": "@pipeline().parameters.pcd_local_authorities_file_path",
+                            "type": "Expression"
+                        },
+                        "merged_pcd_csv_file_directory": {
+                            "value": "@pipeline().parameters.merged_pcd_csv_file_directory",
+                            "type": "Expression"
+                        },
+                        "h3_resolution": {
+                            "value": "@{pipeline().parameters.h3_resolution}",
+                            "type": "Expression"
+                        },
+                        "h3_bits_partition": {
+                            "value": "@{pipeline().parameters.h3_bits_partition}",
+                            "type": "Expression"
+                        },
+                        "distance_error": {
+                            "value": "@{pipeline().parameters.distance_error}",
+                            "type": "Expression"
+                        },
+                        "kv_secret_dls_load_table_key": {
+                            "value": "@pipeline().parameters.kv_secret_dls_load_table_key",
+                            "type": "Expression"
+                        },
+                        "dls_load_table_file_path": {
+                            "value": "@pipeline().parameters.dls_load_table_file_path",
+                            "type": "Expression"
+                        },
+                        "cleaned_data_parq_file_path": {
+                            "value": "@pipeline().parameters.cleaned_data_parq_file_path",
+                            "type": "Expression"
+                        },
+                        "cleaned_data_parq_filename_suffix": {
+                            "value": "@pipeline().parameters.cleaned_data_parq_filename_suffix",
+                            "type": "Expression"
+                        },
+                        "merged_pcd_csv_file_name": {
+                            "value": "@pipeline().parameters.merged_pcd_csv_file_name",
+                            "type": "Expression"
+                        }
+                    }
+                },
+                "linkedServiceName": {
+                    "referenceName": "AzureDatabricksCommon",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "GetTableCSVs",
+                "type": "GetMetadata",
+                "dependsOn": [
+                    {
+                        "activity": "RunNotebook",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "TablesCSV",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "FileDirectory": {
+                                "value": "@{pipeline().parameters.dls_load_table_file_path}/@{formatDateTime(utcNow(), 'yyyy-MM-dd')}",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    "fieldList": [
+                        "childItems"
+                    ],
+                    "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": true,
+                        "enablePartitionDiscovery": false
+                    },
+                    "formatSettings": {
+                        "type": "DelimitedTextReadSettings"
+                    }
+                }
+            },
+            {
+                "name": "ForEachTableCSV",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "GetTableCSVs",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@activity('GetTableCSVs').output.childItems",
+                        "type": "Expression"
+                    },
+                    "activities": [
+                        {
+                            "name": "CopyTableCSV",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "DelimitedTextSource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSReadSettings",
+                                        "recursive": true,
+                                        "wildcardFileName": {
+                                            "value": "@item().name",
+                                            "type": "Expression"
+                                        },
+                                        "enablePartitionDiscovery": false
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "AzurePostgreSQLSink",
+                                    "writeBatchSize": 1000000,
+                                    "writeBatchTimeout": "00:30:00",
+                                    "writeMethod": "CopyCommand"
+                                },
+                                "enableStaging": false,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": true,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "TablesCSV",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "FileDirectory": {
+                                            "value": "@{pipeline().parameters.dls_load_table_file_path}/@{formatDateTime(utcNow(), 'yyyy-MM-dd')}",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "AzurePostgreSqlTables",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "TableName": {
+                                            "value": "@replace(item().name, '.csv', '')",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "parameters": {
+            "kv_secret_scope_name": {
+                "type": "string",
+                "defaultValue": "sigmalabs-kv"
+            },
+            "collision_storage_account": {
+                "type": "string",
+                "defaultValue": "slstasparkuks01"
+            },
+            "collision_st_blob_container": {
+                "type": "string",
+                "defaultValue": "raw-data"
+            },
+            "kv_secret_collision_sta_key": {
+                "type": "string",
+                "defaultValue": "storage-account-key"
+            },
+            "dls_storage_account": {
+                "type": "string",
+                "defaultValue": "sldlssparkuks01"
+            },
+            "dls_raw_blob_container": {
+                "type": "string",
+                "defaultValue": "raw-data"
+            },
+            "kv_secret_dls_raw_key": {
+                "type": "string",
+                "defaultValue": "data-lake-account-key"
+            },
+            "dls_load_parq_blob_container": {
+                "type": "string",
+                "defaultValue": "cleaned-data-parquet"
+            },
+            "kv_secret_dls_load_parq_key": {
+                "type": "string",
+                "defaultValue": "sl-spark-howard-dls-cleaned-data-sas-token"
+            },
+            "dls_raw_modified_blob_container": {
+                "type": "string",
+                "defaultValue": "raw-data-modified"
+            },
+            "kv_secret_dls_raw_modified_key": {
+                "type": "string",
+                "defaultValue": "sl-spark-howard-raw-data-modified-sas-token"
+            },
+            "kv_secret_psql_db_pw_key": {
+                "type": "string",
+                "defaultValue": "sl-spark-howard-db-password"
+            },
+            "psql_db_name": {
+                "type": "string",
+                "defaultValue": "uk_road_safety"
+            },
+            "psql_db_user": {
+                "type": "string",
+                "defaultValue": "howard"
+            },
+            "psql_db_host": {
+                "type": "string",
+                "defaultValue": "sl-psql-spark-uks-01.postgres.database.azure.com"
+            },
+            "psql_db_server": {
+                "type": "string",
+                "defaultValue": "sl-psql-spark-uks-01"
+            },
+            "psql_db_port": {
+                "type": "int",
+                "defaultValue": 5432
+            },
+            "dls_load_table_blob_container": {
+                "type": "string",
+                "defaultValue": "cleaned-data-sql-tables"
+            },
+            "collision_file_path": {
+                "type": "string",
+                "defaultValue": "dft-road-casualty-statistics-collision-last-5-years.csv"
+            },
+            "pcd_local_authorities_file_path": {
+                "type": "string",
+                "defaultValue": "NSPL_2021_AUG_2024/Documents/LAD23_LAU121_ITL321_ITL221_ITL121_UK_LU.csv"
+            },
+            "merged_pcd_csv_file_directory": {
+                "type": "string",
+                "defaultValue": "howard/postcode"
+            },
+            "h3_resolution": {
+                "type": "int",
+                "defaultValue": 9
+            },
+            "h3_bits_partition": {
+                "type": "int",
+                "defaultValue": 8
+            },
+            "distance_error": {
+                "type": "float",
+                "defaultValue": 0.01
+            },
+            "kv_secret_dls_load_table_key": {
+                "type": "string",
+                "defaultValue": "sl-spark-howard-dls-cleaned-sql-tables-sas-token"
+            },
+            "dls_load_table_file_path": {
+                "type": "string",
+                "defaultValue": "howard"
+            },
+            "cleaned_data_parq_file_path": {
+                "type": "string",
+                "defaultValue": "howard"
+            },
+            "cleaned_data_parq_filename_suffix": {
+                "type": "string",
+                "defaultValue": "road_casualty_collisions_last_5_years_statistics.parquet"
+            },
+            "pcd_csv_file_directory": {
+                "type": "string",
+                "defaultValue": "NSPL_2021_AUG_2024/Data/multi_csv"
+            },
+            "merged_pcd_csv_file_name": {
+                "type": "string",
+                "defaultValue": "merged_postcode.csv"
+            },
+            "db_notebook_path": {
+                "type": "string",
+                "defaultValue": "/Users/howard-haw-xuen.man@sigmalabs.co.uk/uk-road-safety-notebook"
+            }
+        },
+        "annotations": [],
+        "lastPublishTime": "2024-11-11T17:09:39Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

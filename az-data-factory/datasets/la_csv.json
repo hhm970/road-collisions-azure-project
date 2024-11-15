@@ -1,0 +1,82 @@
+{
+    "name": "LACSV",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "AzureDataLakeStorage",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "FileDirectory": {
+                "type": "string",
+                "defaultValue": "NSPL_2021_AUG_2024/Documents"
+            },
+            "FileName": {
+                "type": "string",
+                "defaultValue": "LAD23_LAU121_ITL321_ITL221_ITL121_UK_LU.csv"
+            }
+        },
+        "annotations": [],
+        "type": "DelimitedText",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "fileName": {
+                    "value": "@dataset().FileName",
+                    "type": "Expression"
+                },
+                "folderPath": {
+                    "value": "@dataset().FileDirectory",
+                    "type": "Expression"
+                },
+                "fileSystem": "raw-data"
+            },
+            "columnDelimiter": ",",
+            "escapeChar": "\\",
+            "firstRowAsHeader": true,
+            "quoteChar": "\""
+        },
+        "schema": [
+            {
+                "name": "LAD23CD",
+                "type": "String"
+            },
+            {
+                "name": "LAD23NM",
+                "type": "String"
+            },
+            {
+                "name": "LAU121CD",
+                "type": "String"
+            },
+            {
+                "name": "LAU121NM",
+                "type": "String"
+            },
+            {
+                "name": "ITL321CD",
+                "type": "String"
+            },
+            {
+                "name": "ITL321NM",
+                "type": "String"
+            },
+            {
+                "name": "ITL221CD",
+                "type": "String"
+            },
+            {
+                "name": "ITL221NM",
+                "type": "String"
+            },
+            {
+                "name": "ITL121CD",
+                "type": "String"
+            },
+            {
+                "name": "ITL121NM",
+                "type": "String"
+            }
+        ]
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
+}

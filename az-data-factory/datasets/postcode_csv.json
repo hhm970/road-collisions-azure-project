@@ -1,0 +1,174 @@
+{
+    "name": "PostcodeCSVList",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "AzureDataLakeStorage",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "FileDirectory": {
+                "type": "string",
+                "defaultValue": "NSPL_2021_AUG_2024/Data/multi_csv"
+            }
+        },
+        "annotations": [],
+        "type": "DelimitedText",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "folderPath": {
+                    "value": "@dataset().FileDirectory",
+                    "type": "Expression"
+                },
+                "fileSystem": "raw-data"
+            },
+            "columnDelimiter": ",",
+            "escapeChar": "\\",
+            "firstRowAsHeader": true,
+            "quoteChar": "\""
+        },
+        "schema": [
+            {
+                "name": "pcd",
+                "type": "String"
+            },
+            {
+                "name": "pcd2",
+                "type": "String"
+            },
+            {
+                "name": "pcds",
+                "type": "String"
+            },
+            {
+                "name": "dointr",
+                "type": "String"
+            },
+            {
+                "name": "doterm",
+                "type": "String"
+            },
+            {
+                "name": "usertype",
+                "type": "String"
+            },
+            {
+                "name": "oseast1m",
+                "type": "String"
+            },
+            {
+                "name": "osnrth1m",
+                "type": "String"
+            },
+            {
+                "name": "osgrdind",
+                "type": "String"
+            },
+            {
+                "name": "oa21",
+                "type": "String"
+            },
+            {
+                "name": "cty",
+                "type": "String"
+            },
+            {
+                "name": "ced",
+                "type": "String"
+            },
+            {
+                "name": "laua",
+                "type": "String"
+            },
+            {
+                "name": "ward",
+                "type": "String"
+            },
+            {
+                "name": "nhser",
+                "type": "String"
+            },
+            {
+                "name": "ctry",
+                "type": "String"
+            },
+            {
+                "name": "rgn",
+                "type": "String"
+            },
+            {
+                "name": "pcon",
+                "type": "String"
+            },
+            {
+                "name": "ttwa",
+                "type": "String"
+            },
+            {
+                "name": "itl",
+                "type": "String"
+            },
+            {
+                "name": "npark",
+                "type": "String"
+            },
+            {
+                "name": "lsoa21",
+                "type": "String"
+            },
+            {
+                "name": "msoa21",
+                "type": "String"
+            },
+            {
+                "name": "wz11",
+                "type": "String"
+            },
+            {
+                "name": "sicbl",
+                "type": "String"
+            },
+            {
+                "name": "bua22",
+                "type": "String"
+            },
+            {
+                "name": "ru11ind",
+                "type": "String"
+            },
+            {
+                "name": "oac11",
+                "type": "String"
+            },
+            {
+                "name": "lat",
+                "type": "String"
+            },
+            {
+                "name": "long",
+                "type": "String"
+            },
+            {
+                "name": "lep1",
+                "type": "String"
+            },
+            {
+                "name": "lep2",
+                "type": "String"
+            },
+            {
+                "name": "pfa",
+                "type": "String"
+            },
+            {
+                "name": "imd",
+                "type": "String"
+            },
+            {
+                "name": "icb",
+                "type": "String"
+            }
+        ]
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
+}

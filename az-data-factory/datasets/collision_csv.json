@@ -1,0 +1,182 @@
+{
+    "name": "CollisionCSV",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "AzureBlobStorage",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "FileName": {
+                "type": "string",
+                "defaultValue": "dft-road-casualty-statistics-collision-last-5-years.csv"
+            }
+        },
+        "annotations": [],
+        "type": "DelimitedText",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobStorageLocation",
+                "fileName": {
+                    "value": "@dataset().FileName",
+                    "type": "Expression"
+                },
+                "container": "raw-data"
+            },
+            "columnDelimiter": ",",
+            "escapeChar": "\\",
+            "firstRowAsHeader": true,
+            "quoteChar": "\""
+        },
+        "schema": [
+            {
+                "name": "accident_index",
+                "type": "String"
+            },
+            {
+                "name": "accident_year",
+                "type": "String"
+            },
+            {
+                "name": "accident_reference",
+                "type": "String"
+            },
+            {
+                "name": "location_easting_osgr",
+                "type": "String"
+            },
+            {
+                "name": "location_northing_osgr",
+                "type": "String"
+            },
+            {
+                "name": "longitude",
+                "type": "String"
+            },
+            {
+                "name": "latitude",
+                "type": "String"
+            },
+            {
+                "name": "police_force",
+                "type": "String"
+            },
+            {
+                "name": "accident_severity",
+                "type": "String"
+            },
+            {
+                "name": "number_of_vehicles",
+                "type": "String"
+            },
+            {
+                "name": "number_of_casualties",
+                "type": "String"
+            },
+            {
+                "name": "date",
+                "type": "String"
+            },
+            {
+                "name": "day_of_week",
+                "type": "String"
+            },
+            {
+                "name": "time",
+                "type": "String"
+            },
+            {
+                "name": "local_authority_district",
+                "type": "String"
+            },
+            {
+                "name": "local_authority_ons_district",
+                "type": "String"
+            },
+            {
+                "name": "local_authority_highway",
+                "type": "String"
+            },
+            {
+                "name": "first_road_class",
+                "type": "String"
+            },
+            {
+                "name": "first_road_number",
+                "type": "String"
+            },
+            {
+                "name": "road_type",
+                "type": "String"
+            },
+            {
+                "name": "speed_limit",
+                "type": "String"
+            },
+            {
+                "name": "junction_detail",
+                "type": "String"
+            },
+            {
+                "name": "junction_control",
+                "type": "String"
+            },
+            {
+                "name": "second_road_class",
+                "type": "String"
+            },
+            {
+                "name": "second_road_number",
+                "type": "String"
+            },
+            {
+                "name": "pedestrian_crossing_human_control",
+                "type": "String"
+            },
+            {
+                "name": "pedestrian_crossing_physical_facilities",
+                "type": "String"
+            },
+            {
+                "name": "light_conditions",
+                "type": "String"
+            },
+            {
+                "name": "weather_conditions",
+                "type": "String"
+            },
+            {
+                "name": "road_surface_conditions",
+                "type": "String"
+            },
+            {
+                "name": "special_conditions_at_site",
+                "type": "String"
+            },
+            {
+                "name": "carriageway_hazards",
+                "type": "String"
+            },
+            {
+                "name": "urban_or_rural_area",
+                "type": "String"
+            },
+            {
+                "name": "did_police_officer_attend_scene_of_accident",
+                "type": "String"
+            },
+            {
+                "name": "trunk_road_flag",
+                "type": "String"
+            },
+            {
+                "name": "lsoa_of_accident_location",
+                "type": "String"
+            },
+            {
+                "name": "enhanced_severity_collision",
+                "type": "String"
+            }
+        ]
+    },
+    "type": "Microsoft.DataFactory/factories/datasets"
+}
