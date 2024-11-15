@@ -25,6 +25,7 @@ In your Azure environment, ensure each of these services are set up:
     - `cleaned-data-sql-tables`: Used to contain CSV files, which are written into PostgreSQL tables;
     - `cleaned-data-parquet`: Used to contain clean data in Parquet format.
 - Azure Key Vault: Used to contain account keys and SAS tokens for accessing storage services, as well as the password to the PostgreSQL database instance. Note that each individual Blob container will require a credential.
+    - SAS tokens and account keys for storage services can be stored securely via Azure Storage Explorer.
 - Azure PostgreSQL Database: ensure that an instance titled `sl-psql-spark-uks-01` has a database titled `uk_road_safety`.
 - Azure Data Factory: ensure that an instance titled `sl-adf-spark-uks-01` has the following set up,
     - Pipeline: Ensure that a pipeline is created titled `sl-spark-howard-road-safety-pipeline`. Copy the data from `az-data-factory/pipeline.json` into the JSON representation interface.
